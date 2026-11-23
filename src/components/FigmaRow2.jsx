@@ -135,6 +135,7 @@ export default function FigmaRow2({ trafficData, compositionData, activeFilter =
                 dataKey="hour"
                 stroke="transparent"
                 tick={{ fill: '#98A9BA', fontSize: 12, fontFamily: 'Geist Mono' }}
+                interval={activeFilter === '7 Hari' ? 0 : 'preserveStartEnd'}
                 dy={6}
               />
               <YAxis
