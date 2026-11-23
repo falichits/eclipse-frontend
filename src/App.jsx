@@ -138,15 +138,38 @@ function App() {
   );
 
   // 3. Traffic hourly chart data
-  const trafficChartData = isLiveMode && liveHourly?.data?.length > 0 ? liveHourly.data.map(item => {
-    const rawHour = item.hour || '00:00';
-    const displayHour = rawHour.includes(' ') ? rawHour.split(' ')[1] : rawHour;
-    return {
-      hour: displayHour.length === 2 ? `${displayHour}:00` : displayHour,
-      total: Number(item.total) || 0,
-      attack: Number(item.attack_count) || 0,
-    };
-  }) : null;
+  const trafficChartData = isLiveMode && liveHourly?.data?.length > 0 ? (() => {
+    if (activeFilter === '7 Hari') {
+      const dailyMap = {};
+      liveHourly.data.forEach(item => {
+        const raw = item.hour || '';
+        let dayKey = raw;
+        if (raw.includes('-')) {
+          const datePart = raw.split(' ')[0];
+          const parts = datePart.split('-');
+          dayKey = parts.length >= 3 ? `${parts[2]}/${parts[1]}` : datePart;
+        } else if (raw.includes('/')) {
+          dayKey = raw;
+        }
+        if (!dailyMap[dayKey]) {
+          dailyMap[dayKey] = { hour: dayKey, total: 0, attack: 0 };
+        }
+        dailyMap[dayKey].total += Number(item.total) || 0;
+        dailyMap[dayKey].attack += Number(item.attack_count) || 0;
+      });
+      return Object.values(dailyMap);
+    }
+
+    return liveHourly.data.map(item => {
+      const rawHour = item.hour || '00:00';
+      const displayHour = rawHour.includes(' ') ? rawHour.split(' ')[1] : rawHour;
+      return {
+        hour: displayHour.length === 2 ? `${displayHour}:00` : displayHour,
+        total: Number(item.total) || 0,
+        attack: Number(item.attack_count) || 0,
+      };
+    });
+  })() : null;
 
   // 4. Targeted assets data
   const serviceMap = {
