@@ -106,23 +106,10 @@ function App() {
   // 1h items: only recent points
   const lastHourItems = todayHourlyItems.length > 0 ? todayHourlyItems.slice(-1) : [];
 
-  // Tailor summary numbers to activeFilter
-  const isMultiDaySummary = Number(liveSummary?.total_traffic || 0) > 500;
-  let currentTraffic = Number(liveSummary?.total_traffic || 0);
-  let currentAttack = Number(liveSummary?.total_attack || 0);
-  let currentAttackPct = Number(liveSummary?.attack_percentage || 0);
-
-  if (isLiveMode && isMultiDaySummary && todayHourlyItems.length > 0) {
-    if (activeFilter === '24 Jam') {
-      currentTraffic = todayHourlyItems.reduce((acc, it) => acc + (Number(it.total) || 0), 0);
-      currentAttack = todayHourlyItems.reduce((acc, it) => acc + (Number(it.attack_count) || 0), 0);
-      currentAttackPct = currentTraffic > 0 ? (currentAttack / currentTraffic) * 100 : 0;
-    } else if (activeFilter === '1 Jam') {
-      currentTraffic = lastHourItems.reduce((acc, it) => acc + (Number(it.total) || 0), 0);
-      currentAttack = lastHourItems.reduce((acc, it) => acc + (Number(it.attack_count) || 0), 0);
-      currentAttackPct = currentTraffic > 0 ? (currentAttack / currentTraffic) * 100 : 0;
-    }
-  }
+  // Summary numbers directly from Mahda's backend liveSummary
+  const currentTraffic = Number(liveSummary?.total_traffic || 0);
+  const currentAttack = Number(liveSummary?.total_attack || 0);
+  const currentAttackPct = Number(liveSummary?.attack_percentage || 0);
 
   // 1. Stat cards data
   const statCardsData = isLiveMode && currentTraffic > 0 ? {
@@ -248,31 +235,14 @@ function App() {
   };
 
   const rawAssets = liveTopIps?.targeted_assets || [];
-  const rawAttackerSum = rawAssets.reduce((acc, t) => acc + (Number(t.attack_count) || 0), 0);
-
   const targetedAssetsData = isLiveMode ? (() => {
     if (currentAttack === 0) return [];
     if (rawAssets.length === 0) return null;
-
-    // Scale count if total attacks in the current timeframe is less than the raw 7-day all-time sum
-    const scaleFactor = (rawAttackerSum > 0 && activeFilter !== '7 Hari') 
-      ? (currentAttack / rawAttackerSum) 
-      : 1;
-
-    let runningTotal = 0;
-    return rawAssets.map((t, idx) => {
-      let count = Math.round((Number(t.attack_count) || 0) * scaleFactor);
-      if (idx === rawAssets.length - 1 && scaleFactor !== 1) {
-        count = Math.max(0, currentAttack - runningTotal);
-      } else {
-        runningTotal += count;
-      }
-      return {
-        ip: t.ip_address,
-        service: serviceMap[t.ip_address] || (t.targeted_ports?.length ? `Port :${t.targeted_ports[0]}` : 'Internal Service'),
-        count: Math.max(1, count),
-      };
-    });
+    return rawAssets.map(t => ({
+      ip: t.ip_address,
+      service: serviceMap[t.ip_address] || (t.targeted_ports?.length ? `Port :${t.targeted_ports[0]}` : 'Internal Service'),
+      count: Number(t.attack_count) || 0,
+    }));
   })() : null;
 
   // 5. Top attackers data
@@ -287,19 +257,13 @@ function App() {
   const topAttackersData = isLiveMode ? (() => {
     if (currentAttack === 0) return [];
     if (rawAttackers.length === 0) return null;
-
-    const scaleFactor = (rawAttackerSum > 0 && activeFilter !== '7 Hari') 
-      ? (currentAttack / rawAttackerSum) 
-      : 1;
-
     return rawAttackers.map(a => {
       const conf = Number(a.max_confidence || 0);
       const status = conf >= 0.9 ? 'Kritis' : conf >= 0.8 ? 'Tinggi' : conf >= 0.6 ? 'Sedang' : 'Rendah';
-      const attempts = Math.max(1, Math.round((Number(a.attack_count) || 0) * scaleFactor));
       return {
         ip: a.ip_address,
         origin: originMap[a.ip_address] || 'External Proxy',
-        attempts,
+        attempts: Number(a.attack_count) || 0,
         status,
       };
     });
