@@ -21,41 +21,140 @@ export const CSV_COLUMNS = [
   'idle_mean', 'idle_std', 'idle_max', 'idle_min'
 ];
 
-export const generateSampleCsvBlob = (rowCount = 20) => {
+export const generateSampleCsvBlob = (rowCount = 30, type = 'attack') => {
   const header = CSV_COLUMNS.join(',');
   const rows = [];
   const now = new Date();
 
   for (let i = 0; i < rowCount; i++) {
-    const isAttack = i % 3 === 0;
-    const srcIp = isAttack ? `192.168.1.${100 + (i % 5)}` : `192.168.1.${20 + (i % 15)}`;
-    const dstIp = isAttack ? `192.168.1.1` : `10.0.0.${10 + (i % 8)}`;
-    const srcPort = 40000 + i * 23;
-    const dstPort = isAttack ? (i % 2 === 0 ? 80 : 443) : (i % 2 === 0 ? 53 : 8080);
-    const timeStr = new Date(now.getTime() - (rowCount - i) * 60000).toISOString().replace('T', ' ').substring(0, 19);
+    // If type is 'attack', inject 10-12 malicious SYN flood / DDoS flows
+    // If type is 'benign', make 100% of flows clean benign traffic
+    const isAttack = type === 'attack' ? (i % 3 === 0 || i % 7 === 0) : false;
+    
+    const srcIp = isAttack 
+      ? `198.51.100.${15 + (i % 10)}` 
+      : `192.168.1.${10 + (i % 25)}`;
+    const dstIp = isAttack 
+      ? (i % 2 === 0 ? '10.0.4.12' : '10.0.2.8') 
+      : (i % 3 === 0 ? '10.0.7.31' : '10.0.4.12');
+    
+    const srcPort = 41000 + i * 37;
+    const dstPort = isAttack 
+      ? (i % 2 === 0 ? 80 : 443) 
+      : (i % 3 === 0 ? 53 : (i % 2 === 0 ? 443 : 80));
+    
+    const timeStr = new Date(now.getTime() - (rowCount - i) * 60000)
+      .toISOString()
+      .replace('T', ' ')
+      .substring(0, 19);
 
-    const rowObj = {
+    const rowObj = isAttack ? {
+      // Feature vector that reliably triggers Malicious in Hilal's Random Forest
       src_ip: srcIp,
       dst_ip: dstIp,
       src_port: srcPort,
       dst_port: dstPort,
       timestamp: timeStr,
       protocol: 6,
-      flow_duration: isAttack ? 0.05 : 1.45,
-      tot_fwd_pkts: isAttack ? 150 : 25,
-      tot_bwd_pkts: isAttack ? 5 : 20,
-      totlen_fwd_pkts: isAttack ? 6000 : 1200,
-      totlen_bwd_pkts: isAttack ? 250 : 8000,
-      fwd_pkt_len_max: isAttack ? 40 : 1460,
+      flow_duration: 120.0,
+      tot_fwd_pkts: 2,
+      tot_bwd_pkts: 0,
+      totlen_fwd_pkts: 0,
+      totlen_bwd_pkts: 0,
+      fwd_pkt_len_max: 0,
       fwd_pkt_len_min: 0,
-      fwd_pkt_len_mean: isAttack ? 40 : 540,
+      fwd_pkt_len_mean: 0,
+      fwd_pkt_len_std: 0,
+      bwd_pkt_len_max: 0,
+      bwd_pkt_len_min: 0,
+      bwd_pkt_len_mean: 0,
+      bwd_pkt_len_std: 0,
+      flow_byts_s: 0,
+      flow_pkts_s: 16.6,
+      flow_iat_mean: 0.05,
+      flow_iat_std: 0.01,
+      flow_iat_max: 0.1,
+      flow_iat_min: 0.001,
+      fwd_iat_tot: 0.05,
+      fwd_iat_mean: 0.05,
+      fwd_iat_std: 0,
+      fwd_iat_max: 0.05,
+      fwd_iat_min: 0.05,
+      bwd_iat_tot: 0,
+      bwd_iat_mean: 0,
+      bwd_iat_std: 0,
+      bwd_iat_max: 0,
+      bwd_iat_min: 0,
+      fwd_psh_flags: 1,
+      bwd_psh_flags: 0,
+      fwd_urg_flags: 0,
+      bwd_urg_flags: 0,
+      fwd_header_len: 40,
+      bwd_header_len: 0,
+      fwd_pkts_s: 16.6,
+      bwd_pkts_s: 0,
+      pkt_len_min: 0,
+      pkt_len_max: 0,
+      pkt_len_mean: 0,
+      pkt_len_std: 0,
+      pkt_len_var: 0,
+      fin_flag_cnt: 0,
+      syn_flag_cnt: 1, // SYN flag active
+      rst_flag_cnt: 0,
+      psh_flag_cnt: 1,
+      ack_flag_cnt: 0,
+      urg_flag_cnt: 0,
+      cwr_flag_count: 0,
+      ece_flag_cnt: 0,
+      down_up_ratio: 0,
+      pkt_size_avg: 0,
+      fwd_seg_size_avg: 0,
+      bwd_seg_size_avg: 0,
+      fwd_byts_b_avg: 0,
+      fwd_pkts_b_avg: 0,
+      fwd_blk_rate_avg: 0,
+      bwd_byts_b_avg: 0,
+      bwd_pkts_b_avg: 0,
+      bwd_blk_rate_avg: 0,
+      subflow_fwd_pkts: 2,
+      subflow_fwd_byts: 0,
+      subflow_bwd_pkts: 0,
+      subflow_bwd_byts: 0,
+      init_fwd_win_byts: 1024,
+      init_bwd_win_byts: 0,
+      fwd_act_data_pkts: 0,
+      fwd_seg_size_min: 0,
+      active_mean: 0,
+      active_std: 0,
+      active_max: 0,
+      active_min: 0,
+      idle_mean: 0,
+      idle_std: 0,
+      idle_max: 0,
+      idle_min: 0,
+    } : {
+      // Feature vector that reliably triggers Benign in Hilal's Random Forest
+      src_ip: srcIp,
+      dst_ip: dstIp,
+      src_port: srcPort,
+      dst_port: dstPort,
+      timestamp: timeStr,
+      protocol: dstPort === 53 ? 17 : 6,
+      flow_duration: 1.45,
+      tot_fwd_pkts: 25,
+      tot_bwd_pkts: 20,
+      totlen_fwd_pkts: 1200,
+      totlen_bwd_pkts: 8000,
+      fwd_pkt_len_max: 1460,
+      fwd_pkt_len_min: 0,
+      fwd_pkt_len_mean: 540,
       fwd_pkt_len_std: 12.5,
       bwd_pkt_len_max: 1460,
       bwd_pkt_len_min: 0,
       bwd_pkt_len_mean: 450,
       bwd_pkt_len_std: 85.2,
-      flow_byts_s: isAttack ? 125000 : 6400,
-      flow_pkts_s: isAttack ? 3100 : 32,
+      flow_byts_s: 6400,
+      flow_pkts_s: 32,
       flow_iat_mean: 0.002,
       flow_iat_std: 0.001,
       flow_iat_max: 0.01,
@@ -76,24 +175,24 @@ export const generateSampleCsvBlob = (rowCount = 20) => {
       bwd_urg_flags: 0,
       fwd_header_len: 32,
       bwd_header_len: 32,
-      fwd_pkts_s: isAttack ? 3000 : 18,
-      bwd_pkts_s: isAttack ? 100 : 14,
+      fwd_pkts_s: 18,
+      bwd_pkts_s: 14,
       pkt_len_min: 0,
       pkt_len_max: 1460,
-      pkt_len_mean: isAttack ? 40.5 : 420.0,
+      pkt_len_mean: 420.0,
       pkt_len_std: 45.2,
       pkt_len_var: 2043.0,
       fin_flag_cnt: 0,
-      syn_flag_cnt: isAttack ? 1 : 0,
+      syn_flag_cnt: 0, // No SYN flood
       rst_flag_cnt: 0,
-      psh_flag_cnt: isAttack ? 0 : 1,
-      ack_flag_cnt: 1,
+      psh_flag_cnt: 1,
+      ack_flag_cnt: 1, // Normal ACK
       urg_flag_cnt: 0,
       cwr_flag_count: 0,
       ece_flag_cnt: 0,
-      down_up_ratio: isAttack ? 0.03 : 1.2,
-      pkt_size_avg: isAttack ? 40 : 410,
-      fwd_seg_size_avg: isAttack ? 40 : 540,
+      down_up_ratio: 1.2,
+      pkt_size_avg: 410,
+      fwd_seg_size_avg: 540,
       bwd_seg_size_avg: 450,
       fwd_byts_b_avg: 0,
       fwd_pkts_b_avg: 0,
@@ -101,13 +200,13 @@ export const generateSampleCsvBlob = (rowCount = 20) => {
       bwd_byts_b_avg: 0,
       bwd_pkts_b_avg: 0,
       bwd_blk_rate_avg: 0,
-      subflow_fwd_pkts: isAttack ? 150 : 25,
-      subflow_fwd_byts: isAttack ? 6000 : 1200,
-      subflow_bwd_pkts: isAttack ? 5 : 20,
-      subflow_bwd_byts: isAttack ? 250 : 8000,
+      subflow_fwd_pkts: 25,
+      subflow_fwd_byts: 1200,
+      subflow_bwd_pkts: 20,
+      subflow_bwd_byts: 8000,
       init_fwd_win_byts: 65535,
       init_bwd_win_byts: 65535,
-      fwd_act_data_pkts: isAttack ? 140 : 18,
+      fwd_act_data_pkts: 18,
       fwd_seg_size_min: 32,
       active_mean: 0,
       active_std: 0,
@@ -127,8 +226,10 @@ export const generateSampleCsvBlob = (rowCount = 20) => {
   return new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
 };
 
-export const downloadSampleCsv = (filename = 'eclipse_sample_traffic.csv') => {
-  const blob = generateSampleCsvBlob(30);
+export const downloadSampleCsv = (type = 'attack') => {
+  const isAttack = type === 'attack';
+  const filename = isAttack ? 'sample_attack_traffic_synflood.csv' : 'sample_benign_normal_traffic.csv';
+  const blob = generateSampleCsvBlob(30, type);
   const url = URL.createObjectURL(blob);
   const link = document.createElement('a');
   link.setAttribute('href', url);

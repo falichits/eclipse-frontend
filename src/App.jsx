@@ -246,11 +246,34 @@ function App() {
     '10.0.5.15': 'Payment Service',
     '10.0.1.1': 'DNS Gateway',
   };
-  const targetedAssetsData = isLiveMode && liveTopIps?.targeted_assets?.length > 0 ? liveTopIps.targeted_assets.map(t => ({
-    ip: t.ip_address,
-    service: serviceMap[t.ip_address] || (t.targeted_ports?.length ? `Port :${t.targeted_ports[0]}` : 'Internal Service'),
-    count: Number(t.attack_count) || 0,
-  })) : null;
+
+  const rawAssets = liveTopIps?.targeted_assets || [];
+  const rawAttackerSum = rawAssets.reduce((acc, t) => acc + (Number(t.attack_count) || 0), 0);
+
+  const targetedAssetsData = isLiveMode ? (() => {
+    if (currentAttack === 0) return [];
+    if (rawAssets.length === 0) return null;
+
+    // Scale count if total attacks in the current timeframe is less than the raw 7-day all-time sum
+    const scaleFactor = (rawAttackerSum > 0 && activeFilter !== '7 Hari') 
+      ? (currentAttack / rawAttackerSum) 
+      : 1;
+
+    let runningTotal = 0;
+    return rawAssets.map((t, idx) => {
+      let count = Math.round((Number(t.attack_count) || 0) * scaleFactor);
+      if (idx === rawAssets.length - 1 && scaleFactor !== 1) {
+        count = Math.max(0, currentAttack - runningTotal);
+      } else {
+        runningTotal += count;
+      }
+      return {
+        ip: t.ip_address,
+        service: serviceMap[t.ip_address] || (t.targeted_ports?.length ? `Port :${t.targeted_ports[0]}` : 'Internal Service'),
+        count: Math.max(1, count),
+      };
+    });
+  })() : null;
 
   // 5. Top attackers data
   const originMap = {
@@ -260,16 +283,27 @@ function App() {
     '192.0.2.14': 'China',
     '203.0.113.99': 'Rusia',
   };
-  const topAttackersData = isLiveMode && liveTopIps?.top_attackers?.length > 0 ? liveTopIps.top_attackers.map(a => {
-    const conf = Number(a.max_confidence || 0);
-    const status = conf >= 0.9 ? 'Kritis' : conf >= 0.8 ? 'Tinggi' : conf >= 0.6 ? 'Sedang' : 'Rendah';
-    return {
-      ip: a.ip_address,
-      origin: originMap[a.ip_address] || 'External Proxy',
-      attempts: Number(a.attack_count) || 0,
-      status,
-    };
-  }) : null;
+  const rawAttackers = liveTopIps?.top_attackers || [];
+  const topAttackersData = isLiveMode ? (() => {
+    if (currentAttack === 0) return [];
+    if (rawAttackers.length === 0) return null;
+
+    const scaleFactor = (rawAttackerSum > 0 && activeFilter !== '7 Hari') 
+      ? (currentAttack / rawAttackerSum) 
+      : 1;
+
+    return rawAttackers.map(a => {
+      const conf = Number(a.max_confidence || 0);
+      const status = conf >= 0.9 ? 'Kritis' : conf >= 0.8 ? 'Tinggi' : conf >= 0.6 ? 'Sedang' : 'Rendah';
+      const attempts = Math.max(1, Math.round((Number(a.attack_count) || 0) * scaleFactor));
+      return {
+        ip: a.ip_address,
+        origin: originMap[a.ip_address] || 'External Proxy',
+        attempts,
+        status,
+      };
+    });
+  })() : null;
 
   // 6. Recent alerts data
   const recentAlertsData = isLiveMode && liveLogs?.data?.length > 0 ? liveLogs.data.slice(0, 4).map(log => {
