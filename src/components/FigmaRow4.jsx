@@ -1,7 +1,7 @@
 import React from 'react';
 import { AlertCircle, AlertTriangle, ShieldAlert, Info } from 'lucide-react';
 
-export default function FigmaRow4({ recentAlerts, modelPerformance }) {
+export default function FigmaRow4({ recentAlerts, modelPerformance, activeFilter = '24 Jam' }) {
   // Figma default alerts
   const defaultAlerts = [
     {
@@ -40,9 +40,15 @@ export default function FigmaRow4({ recentAlerts, modelPerformance }) {
 
   const alertsList = (recentAlerts && recentAlerts.length > 0) ? recentAlerts : defaultAlerts;
 
-  const accuracy = modelPerformance?.accuracy || '[REAL DATA: 800/1000]';
-  const fpr = modelPerformance?.fpr || '[REAL DATA: 400/1000]';
+  const accuracy = modelPerformance?.accuracy || '99.35%';
+  const fpr = modelPerformance?.fpr || '0.61%';
   const dailyPredictions = modelPerformance?.dailyPredictions || '48.330';
+  const predictionLabel =
+    activeFilter === '1 Jam'
+      ? 'Prediksi (1 jam)'
+      : activeFilter === '7 Hari'
+      ? 'Prediksi (7 hari)'
+      : 'Prediksi (24 jam)';
 
   return (
     <div className="flex flex-row items-start p-0 gap-4 w-full h-[226px]">
@@ -168,10 +174,10 @@ export default function FigmaRow4({ recentAlerts, modelPerformance }) {
             </div>
           </div>
 
-          {/* Metrik 3: Prediksi hari ini */}
+          {/* Metrik 3: Prediksi sesuai filter waktu */}
           <div className="flex flex-row justify-between items-center w-full h-[20px]">
             <span className="font-['Geist'] font-normal text-[13px] leading-[20px] text-[#E8EEF4]">
-              Prediksi hari ini
+              {predictionLabel}
             </span>
             <span className="font-['Geist_Mono'] font-normal text-[13px] leading-[20px] text-[#E8EEF4]">
               {dailyPredictions}

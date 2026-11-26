@@ -49,7 +49,7 @@ export const generateSampleCsvBlob = (rowCount = 30, type = 'attack') => {
       .substring(0, 19);
 
     const rowObj = isAttack ? {
-      // Feature vector that reliably triggers Malicious in Hilal's Random Forest
+      // Feature vector that reliably triggers Malicious in CNN model
       src_ip: srcIp,
       dst_ip: dstIp,
       src_port: srcPort,
@@ -133,7 +133,7 @@ export const generateSampleCsvBlob = (rowCount = 30, type = 'attack') => {
       idle_max: 0,
       idle_min: 0,
     } : {
-      // Feature vector that reliably triggers Benign in Hilal's Random Forest
+      // Feature vector that reliably triggers Benign in CNN model
       src_ip: srcIp,
       dst_ip: dstIp,
       src_port: srcPort,

@@ -278,7 +278,7 @@ export default function FigmaRow2({ trafficData, compositionData, activeFilter =
 
           {/* Catatan Footer */}
           <span className="font-['Geist'] font-normal text-[12px] leading-[16px] text-[#98A9BA]">
-            Lolos: 7601 model, dinilai auto malicious
+            Klasifikasi otomatis oleh model CNN (CIC-IDS2017)
           </span>
 
         </div>

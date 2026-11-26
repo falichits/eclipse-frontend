@@ -288,7 +288,7 @@ function App() {
   const modelPerformanceData = isLiveMode && liveMetrics ? {
     accuracy: liveMetrics.accuracy || '99.35%',
     fpr: liveMetrics.false_positive_rate || liveMetrics.fpr || '0.61%',
-    dailyPredictions: Number(liveMetrics.daily_predictions || currentTraffic || 316).toLocaleString('id-ID'),
+    dailyPredictions: Number(currentTraffic || liveMetrics.daily_predictions || 316).toLocaleString('id-ID'),
   } : {
     accuracy: '99.35%',
     fpr: '0.61%',
@@ -346,6 +346,7 @@ function App() {
             <FigmaRow4
               recentAlerts={recentAlertsData}
               modelPerformance={modelPerformanceData}
+              activeFilter={activeFilter}
             />
           </section>
 

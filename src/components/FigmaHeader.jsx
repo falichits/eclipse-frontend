@@ -20,7 +20,7 @@ export default function FigmaHeader({
       <div className="flex flex-row items-center p-0 gap-4 h-[28px]">
         {/* Judul */}
         <h1 className="font-['Geist'] font-semibold text-[20px] leading-[28px] text-[#E8EEF4] m-0 tracking-normal whitespace-nowrap">
-          Monitoring Serangan Jaringan
+          Eclipse IDS — Monitoring Serangan Jaringan
         </h1>
 
         {/* Tag DUMMY DATA / LIVE DATA */}
@@ -28,7 +28,7 @@ export default function FigmaHeader({
           type="button"
           onClick={() => setIsLiveMode(!isLiveMode)}
           className="box-border flex flex-row items-center px-2 py-1 h-[26px] border border-[#35485A] hover:border-[#2DD4BF] rounded-[4px] bg-transparent cursor-pointer transition"
-          title="Klik untuk beralih antara Dummy Data Figma & Live Neon Data"
+          title="Klik untuk beralih antara Mode Demo & Live Neon Data"
         >
           <span className={`font-['Geist_Mono'] font-medium text-[12px] leading-[16px] uppercase tracking-wide ${
             isLiveMode ? 'text-[#2DD4BF]' : 'text-[#98A9BA]'
@@ -95,7 +95,7 @@ export default function FigmaHeader({
             type="button"
             onClick={onOpenUpload}
             className="flex flex-row items-center gap-1.5 px-3 py-1.5 h-[32px] rounded-[6px] bg-[#18242F] hover:bg-[#243241] border border-[#35485A] text-[#2DD4BF] font-['Geist'] font-medium text-[12px] cursor-pointer transition"
-            title="Upload CSV untuk analisis model Hilal"
+            title="Upload CSV untuk analisis model CNN"
           >
             <UploadCloud className="w-3.5 h-3.5" />
             <span>Upload CSV</span>

@@ -247,7 +247,7 @@ export default function UploadModal({ isOpen, onClose, onSuccess }) {
                 </span>
               </div>
               <p className="text-xs text-[#98A9BA] font-['Geist'] mt-0.5">
-                Klasifikasi aliran jaringan dengan Model Random Forest Hilal & simpan ke Neon DB
+                Klasifikasi aliran jaringan dengan Model CNN & simpan ke Neon DB
               </p>
             </div>
           </div>
@@ -339,7 +339,7 @@ export default function UploadModal({ isOpen, onClose, onSuccess }) {
                       <Loader2 className="w-3.5 h-3.5 animate-spin" />
                       {uploadStep === 1 && 'Memvalidasi 77 fitur aliran jaringan...'}
                       {uploadStep === 2 && 'Mengirim data ke FastAPI Gateway...'}
-                      {uploadStep === 3 && 'Inferensi Random Forest di yuellen.my.id...'}
+                      {uploadStep === 3 && 'Inferensi Model CNN di yuellen.my.id...'}
                       {uploadStep === 4 && 'Menyimpan catatan hasil ke Neon DB...'}
                     </span>
                     <span className="text-[#E8EEF4] font-bold">{uploadProgress}%</span>
@@ -612,7 +612,7 @@ export default function UploadModal({ isOpen, onClose, onSuccess }) {
                 Analisis selesai dalam 1.4 detik
               </span>
             ) : (
-              <span>Model: Random Forest &bull; Ingestion: 77 Features</span>
+              <span>Model: CNN (CIC-IDS2017) &bull; Ingestion: 77 Features</span>
             )}
           </div>
 
